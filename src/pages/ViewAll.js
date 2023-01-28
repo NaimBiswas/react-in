@@ -6,8 +6,11 @@ import apiEndPoints from "./index.constant";
 import "./ViewAll.css";
 function ViewAll() {
   const [allDetails, setAllDetails] = useState([]);
+  const [showLoader, setshowLoader] = useState(true);
   useEffect(() => {
+    setshowLoader(true)
     axios.get(apiEndPoints.api + "details").then((data) => {
+      setshowLoader(false)
         setAllDetails(data.data?.data)
     });
   }, []);
@@ -64,7 +67,10 @@ function ViewAll() {
                   <tr className="noRecord">
                     <td className="TableBorder"></td>
                     <td className="TableBorder"></td>
-                    <td className="TableBorder color">No Record Found</td>
+                    <td className="TableBorder color">                  
+                    <div className="loader showLoader"></div>
+                      {showLoader? "":"No Record Found"}
+                    </td>
                     <td className="TableBorder"></td>
                     <td className="TableBorder"></td>
                   </tr>
