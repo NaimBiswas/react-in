@@ -11,6 +11,7 @@ root.render(
     <React.StrictMode>
       <Routes>
         <Route path="/" element={ <App/> } />
+        <Route path="/:id" element={ <App/> } />
         <Route path="view-all" element={ <ViewAll/> } />
       </Routes>
     </React.StrictMode>

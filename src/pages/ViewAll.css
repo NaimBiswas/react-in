@@ -5,3 +5,41 @@
     font-size: 24px;
     color: green;
 }
+.TableBorder{
+    border: none;
+}
+.noRecord{
+    background-color: #fff7002b;
+    height: 50px;
+}
+.color{
+    color: #9d0000;
+    font-weight: bold;
+    font-size: 15px;
+    text-align: center;
+}
+.tableView{
+    max-height: 500px;
+    overflow: auto;
+}
+.editIcon{
+    cursor: pointer;
+    font-size: 20px;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none; /* Firefox */
+  }
+  .selectors {
+    background: gray;
+    padding: 5px;
+    border-radius: 9px;
+    color: white;
+    display: block;
+    width: fit-content;
+    margin: 5px;
+    
+  }

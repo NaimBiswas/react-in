@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import options from './dropDownValue.json'
 import Select from 'react-select'
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import apiEndPoints from "./pages/index.constant";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,6 +14,19 @@ function App() {
   let [isValidationToShow, setIsValidationToShow] = useState("");
   let [checkboxValidation, setcheckboxValidation] = useState(Boolean);
   let [selectorValidation, setselectorValidation] = useState(Boolean);
+  const [isSaveLoad, setisSaveLoad] = useState(Boolean);
+  let { id } = useParams();
+  useEffect(() => {
+    if(id) {
+      axios.get(apiEndPoints.api+`details/${id}`).then(data => {
+        const details =  data.data.data
+        setName(details.name)
+        const terms = details.isTermsAccepted == 'true'? true: false 
+        setAgreeTerms(terms)
+        setSelectedOptions(details.selectors)
+      })
+    }
+  }, []);
   useEffect(() => {
     if (name && name.length) {
       setIsValidationToShow(false);
@@ -41,13 +54,42 @@ function App() {
       selectors: selectedOptions,
       isTermsAccepted: agreeTerms
     }]
-    setName('')
-    setAgreeTerms(false)
-    setSelectedOptions([])
     if(!name || !agreeTerms || selectedOptions.length == 0) {
       return;
     }
+    if(id) {
+      setisSaveLoad(true)
+      axios.patch(apiEndPoints.api+`save/${id}`,...dataModel).then(data => {
+        setisSaveLoad(false)
+        toast.success("Details updated successfully ", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+          // navigate('/view-all')
+      }).catch(err => {
+        setisSaveLoad(false)
+        toast.error(err.response?.data?.error?.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
+      })
+      return
+    }
+    setisSaveLoad(true)
     axios.post(apiEndPoints.api+'save',...dataModel).then(data => {
+      setisSaveLoad(false)
       toast.success("Details saved successfully ", {
         position: "top-right",
         autoClose: 5000,
@@ -58,9 +100,12 @@ function App() {
         progress: undefined,
         theme: "light",
         });
-        // navigate('/view-all')
+        setName('')
+        setAgreeTerms(false)
+        setSelectedOptions([])
     }).catch(err => {
-      toast.error(err.response?.data?.error?.message, {
+      setisSaveLoad(false)
+      toast.error(err.response?.data?.error?.message || err.response?.data?.error, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -99,13 +144,13 @@ function App() {
               />
               <span className="focus-input100"></span>
               <span className="symbol-input100">
-                <i className="fa fa-envelope" aria-hidden="true"></i>
+                <i className="fa fa-user" aria-hidden="true"></i>
               </span>
             </div>
             <div className={`wrap-input100 validate-input ${selectorValidation ? "alert-validate" : ""  }`}
               data-validate="Selector field is required"
             >
-              <Select className=""  closeMenuOnSelect={false} isMulti options={options} 
+              <Select className="selectBox"  closeMenuOnSelect={false} isMulti options={options} 
               onChange={(e) =>{setSelectedOptions(e); setselectorValidation(false)}}
               value={selectedOptions}
               isOptionDisabled={() => selectedOptions.length >= 5}/>
@@ -118,12 +163,14 @@ function App() {
             </div>
             
             <div className="container-login100-form-btn">
-              <button  className="login100-form-btn">Save</button>
+              <button  className={`login100-form-btn ${isSaveLoad? "loader": ''}`}>{
+                id? "Update" :"Save"
+              }</button>
             </div>
 
             <div className="text-center p-t-12"></div>
             <div className="text-center p-t-136">
-              <Link  className="txt2"  to='view-all'>
+              <Link  className="txt2"  to='/view-all'>
                 View All Submitted Result 
                 <i className="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
               </Link>
