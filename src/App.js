@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import options from './dropDownValue.json'
 import Select from 'react-select'
-import ViewAll from "./pages/ViewAll";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import apiEndPoints from "./pages/index.constant";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios  from "axios";
 function App() {
   const [name, setName] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(Boolean);
@@ -24,7 +27,7 @@ function App() {
   }
   const onSubmit = async (event) => {
     event.preventDefault();
-    if (!name && name.length === 0) {
+    if (!name && name?.length === 0) {
       setIsValidationToShow(true);
     }
     if(!agreeTerms) {
@@ -38,7 +41,36 @@ function App() {
       selectors: selectedOptions,
       isTermsAccepted: agreeTerms
     }]
-    console.log(dataModel);
+    setName('')
+    setAgreeTerms(false)
+    setSelectedOptions([])
+    if(!name || !agreeTerms || selectedOptions.length == 0) {
+      return;
+    }
+    axios.post(apiEndPoints.api+'save',...dataModel).then(data => {
+      toast.success("Details saved successfully ", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+        // navigate('/view-all')
+    }).catch(err => {
+      toast.error(err.response?.data?.error?.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+    })
   };
   return (
     <div className="limiter">
@@ -63,6 +95,7 @@ function App() {
                 placeholder="Name"
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => (isValidationToShow = true)}
+                value={name}
               />
               <span className="focus-input100"></span>
               <span className="symbol-input100">
@@ -72,17 +105,20 @@ function App() {
             <div className={`wrap-input100 validate-input ${selectorValidation ? "alert-validate" : ""  }`}
               data-validate="Selector field is required"
             >
-              <Select className=""  closeMenuOnSelect={false} isMulti options={options} onChange={(e) =>{setSelectedOptions(e); setselectorValidation(false)}} isOptionDisabled={() => selectedOptions.length >= 5}/>
+              <Select className=""  closeMenuOnSelect={false} isMulti options={options} 
+              onChange={(e) =>{setSelectedOptions(e); setselectorValidation(false)}}
+              value={selectedOptions}
+              isOptionDisabled={() => selectedOptions.length >= 5}/>
               <span className="focus-input100"></span>
             </div>
             <div className={` validate-input ${checkboxValidation ? "alert-validate" : ""}`} data-validate="Agree to terms field is required">
               <div className="text-center p-t-12">
-                <input onChange={(e) =>{ setAgreeTerms(!agreeTerms);onCheckBoxChange(e)}} type="checkbox" className="form-check-input"  /> <span className="txt1">Agree to terms</span> 
+                <input checked={agreeTerms} onChange={(e) =>{ setAgreeTerms(!agreeTerms);onCheckBoxChange(e)}} type="checkbox" className="form-check-input"  /> <span className="txt1">Agree to terms</span> 
               </div>
             </div>
             
             <div className="container-login100-form-btn">
-              <button className="login100-form-btn">Save</button>
+              <button  className="login100-form-btn">Save</button>
             </div>
 
             <div className="text-center p-t-12"></div>
@@ -95,6 +131,7 @@ function App() {
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }
